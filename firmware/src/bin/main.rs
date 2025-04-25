@@ -28,7 +28,7 @@ fn main() -> ! {
         Attenuation::_11dB,
     );
     let mut adc1 = Adc::new(_peripherals.ADC1, adc1_config);
-    
+
     let mut uart = Uart::new(
         _peripherals.UART0,
         uart::Config::default().with_baudrate(115_200),
@@ -48,7 +48,7 @@ where
     PIN: AdcChannel, ADCI: esp_hal::analog::adc::RegisterAccess
 {
     let mut sum: u32 = 0;
-    let samples = 128;
+    let samples = 256;
 
     for _ in 0..samples {
         let value = nb::block!(adc.read_oneshot(pin))? as u32;

@@ -1,6 +1,6 @@
 use serialport::SerialPort;
 
-fn read_packet(serial: &mut dyn SerialPort) -> Option<Vec<u16>> {
+pub fn read_packet(serial: &mut Box<dyn SerialPort>) -> Option<Vec<u16>> {
     let mut header = [0u8; 1];
 
     loop {
