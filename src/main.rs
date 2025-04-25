@@ -1,3 +1,5 @@
+mod packets;
+
 use std::io::{BufRead, BufReader};
 use std::time::Duration;
 use libpulse_binding::volume::{ChannelVolumes, Volume};
@@ -16,16 +18,9 @@ fn bar(values: &[u16], pulse: &mut SinkController, volumes: &mut ChannelVolumes)
         .collect::<Vec<f32>>();
 
     let percent = data.first().unwrap_or(&0.);
-    //println!("{:.2}%", percent);
     let volume: u32 = ((percent / 100.0) * 65536.0).round() as u32;
     
     pulse.set_device_volume_by_index(0, volumes.set(2, Volume(volume)))
-    
-    /*let cmd_data = data.first().unwrap_or(&0.).to_string();
-    let _ = Command::new("wpctl")
-        .args(["set-volume", "@DEFAULT_AUDIO_SINK@", cmd_data.as_str()])
-        .status().await
-        .expect("Failed to run wpctl");*/
 }
 
 fn start_reading() {
@@ -49,7 +44,6 @@ fn start_reading() {
     loop {
         buffer.clear(); // empty the buffer each time
         let read_result = reader.read_until(b'\n', &mut buffer);
-
         match read_result {
             Ok(0) => {
                 // Stream ended / timeout
@@ -57,27 +51,7 @@ fn start_reading() {
                 break;
             }
             Ok(_) => {
-                // Convert buffer to string safely
-                if let Ok(line) = std::str::from_utf8(&buffer) {
-                    let trimmed = line.trim();
-
-                    let values: Result<Vec<u16>, _> = trimmed
-                        .split('\t')
-                        .map(str::trim)
-                        .map(|s| s.parse::<u16>())
-                        .collect();
-
-                    match values {
-                        Ok(data) if data != previous_values => {
-                            previous_values = data.clone();
-                            bar(&data, &mut controller, &mut channels);
-                        },
-                        Ok(_) => {}, // same as previous, ignore
-                        Err(_) => eprintln!("Invalid line: {:?}", trimmed),
-                    }
-                } else {
-                    eprintln!("Invalid UTF-8 data: {:?}", buffer);
-                }
+                //process_volume_data();
             }
             Err(e) => {
                 eprintln!("Serial read error: {:?}", e);
@@ -86,6 +60,30 @@ fn start_reading() {
         }
     }
 }
+
+/*fn process_volume_data(previous_values: Vec<u16>, data: &[u16]) {
+    // Convert buffer to string safely
+    if let Ok(line) = std::str::from_utf8(&buffer) {
+        let trimmed = line.trim();
+
+        let values: Result<Vec<u16>, _> = trimmed
+            .split('\t')
+            .map(str::trim)
+            .map(|s| s.parse::<u16>())
+            .collect();
+
+        match values {
+            Ok(values) if values != previous_values => {
+                previous_values = values.clone();
+                bar(&values, &mut controller, &mut channels);
+            },
+            Ok(_) => {}, // same as previous, ignore
+            Err(_) => eprintln!("Invalid line: {:?}", trimmed),
+        }
+    } else {
+        eprintln!("Invalid UTF-8 data: {:?}", buffer);
+    }
+}*/
 
 fn main() {
     start_reading();
