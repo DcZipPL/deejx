@@ -1,4 +1,5 @@
 mod packets;
+mod audio;
 
 use std::time::Duration;
 use libpulse_binding::volume::{ChannelVolumes, Volume};
