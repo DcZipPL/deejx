@@ -2,42 +2,12 @@ mod packets;
 mod audio;
 
 use std::time::Duration;
-use libpulse_binding::volume::{ChannelVolumes, Volume};
-use pulsectl::controllers::{AppControl, DeviceControl, SinkController};
+use crate::audio::{AudioControl, RAW_MAX};
 
-const RAW_MAX: f32 = 2047.;
 const STEP_SIZE: i32 = 64;
-const MINIMUM: f32 = 0.;
-const MAXIMUM: f32 = 100.;
-
-fn set_master_volume(change: u16, pulse: &mut SinkController, volumes: &mut ChannelVolumes) {
-    let volume = ((change as f32) / RAW_MAX).max(MINIMUM).min(MAXIMUM);
-    let volume: u32 = ((volume) * 65536.0).round() as u32;
-    
-    pulse.set_device_volume_by_index(0, volumes.set(2, Volume(volume)))
-}
-
-fn set_app_volume(pulse: &mut SinkController, change: u16){
-    if let Ok(apps) = pulse.list_applications() {
-        for app in apps {
-            if app.name.is_some_and(|s| s.to_lowercase().contains("spotify")) {
-                let app_volume = app.volume.avg().0 as f32 / 65536.;
-                let volume: f32 = (change as f32 / RAW_MAX * 100.0).round() / 100.0;
-                let volume_change = volume - app_volume;
-                println!("left: {:?}, right: {:?}, change: {}", app.volume.get()[0], app.volume.get()[1], volume_change);
-                if volume_change > 0. {
-                    pulse.increase_app_volume_by_percent(app.index, volume_change.abs() as f64);
-                } else {
-                    pulse.decrease_app_volume_by_percent(app.index, volume_change.abs() as f64);
-                }
-            }
-        }
-    }
-}
 
 fn start_reading() {
-    let mut controller = SinkController::create().unwrap();
-    let mut channels = controller.get_device_by_index(0).unwrap().volume;
+    let mut controller = audio::get_controller();
     
     let port_name = "/dev/ttyUSB0";
     let baud_rate = 115_200;
@@ -52,12 +22,12 @@ fn start_reading() {
 
     loop {
         if let Some(sliders) = packets::read_packet(&mut serial) {
-            iter_sliders(sliders, &mut previous_values, &mut controller, &mut channels);
+            iter_sliders(sliders, &mut previous_values, &mut controller);
         }
     }
 }
 
-fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &mut SinkController, channels: &mut ChannelVolumes) {
+fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &mut Box<impl AudioControl>) {
     // Prepare initial array
     if previous_values.len() != sliders.len() {
         *previous_values = sliders.clone();
@@ -74,10 +44,10 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
             previous_values[i] = sliders[i];
             if i == 0 {
                 println!("a: {} -> {}", previous_values[i], value);
-                set_master_volume(sliders[i], controller, channels); // TODO: impl other way
+                controller.set_master_volume(0, sliders[i]); // TODO: impl other way
             } else {
                 println!("b: {} -> {}", previous_values[i], value);
-                set_app_volume(controller, sliders[i]);
+                controller.set_app_volume_by_name("spotify", sliders[i]);
             }
         }
     }
