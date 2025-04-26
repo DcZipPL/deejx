@@ -2,12 +2,10 @@
 #![no_main]
 
 use alloc::vec::Vec;
-use core::fmt;
-use core::fmt::Write;
-use esp_hal::{clock::CpuClock, main, time::{Duration, Instant}, analog::adc::{AdcConfig, Attenuation}, Blocking, uart};
+use esp_hal::{clock::CpuClock, main, analog::adc::{AdcConfig, Attenuation}, Blocking, uart};
 
 use esp_println as _;
-use defmt::{info};
+use defmt::{info, println};
 use esp_backtrace as _;
 use esp_hal::analog::adc::{Adc, AdcChannel, AdcPin};
 use esp_hal::uart::Uart;
@@ -21,25 +19,33 @@ fn main() -> ! {
 
     esp_alloc::heap_allocator!(size: 72 * 1024);
 
-    let analog_pin = _peripherals.GPIO35;
+    let analog_pin_35 = _peripherals.GPIO35;
+    let analog_pin_32 = _peripherals.GPIO34;
+    
     let mut adc1_config = AdcConfig::new();
-    let mut pin = adc1_config.enable_pin(
-        analog_pin,
-        Attenuation::_11dB,
-    );
+    let mut pin_32 = adc1_config.enable_pin(analog_pin_32, Attenuation::_11dB);
+    let mut pin_35 = adc1_config.enable_pin(analog_pin_35, Attenuation::_11dB);
+    
     let mut adc1 = Adc::new(_peripherals.ADC1, adc1_config);
 
-    let mut uart = Uart::new(
-        _peripherals.UART0,
-        uart::Config::default().with_baudrate(115_200),
-    ).unwrap();
+    let mut uart = Uart::new(_peripherals.UART0, uart::Config::default().with_baudrate(115_200)).unwrap();
 
-
+    let mut prev_value_32 = 0;
+    let mut prev_value_35 = 0;
     loop {
-        let r_value = read_stable_adc(&mut adc1, &mut pin);
-        if let Ok(value) = r_value {
-            let _ = uart.write(&build_packet(&[value]));
+        let mut r_value_32 = prev_value_32;
+        if let Ok(val) = read_stable_adc(&mut adc1, &mut pin_32) {
+            r_value_32 = val;
+            prev_value_32 = r_value_32;
         }
+
+        let mut r_value_35 = prev_value_35;
+        if let Ok(val) = read_stable_adc(&mut adc1, &mut pin_35) {
+            r_value_35 = val;
+            prev_value_35 = r_value_35;
+        }
+        
+        let _ = uart.write(&build_packet(&[r_value_35, r_value_32]));
     }
 }
 

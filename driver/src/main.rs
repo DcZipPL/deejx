@@ -55,14 +55,16 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
         let value = sliders[i] as i32;
         let prev_value = previous_values[i] as i32;
 
-        if (value - prev_value).abs() >= STEP_SIZE {
-            // We don't want unstable values
+        if ((value - prev_value).abs() >= STEP_SIZE) /* We don't want unstable values and reduce calls to shell */
+            || ((value < 1 || value > RAW_MAX as i32 - 1) && value != prev_value) /* Safety net for extreme values */ {
+
             previous_values[i] = sliders[i];
-            change_volume(&previous_values, controller, channels);
-        } else if (value < 1 || value > RAW_MAX as i32 - 1) && value != prev_value {
-            // Safety net for extreme values
-            previous_values[i] = sliders[i];
-            change_volume(&previous_values, controller, channels);
+            if i == 0 {
+                println!("a: {} -> {}", previous_values[i], value);
+                change_volume(&previous_values, controller, channels);
+            } else {
+                println!("b: {} -> {}", previous_values[i], value);
+            }
         }
     }
 }
