@@ -1,6 +1,7 @@
 mod packets;
 mod audio;
 mod config;
+mod midi;
 
 use std::time::Duration;
 use serialport::SerialPort;
