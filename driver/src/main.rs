@@ -1,38 +1,11 @@
 mod packets;
 mod audio;
+mod config;
 
-use std::error::Error;
-use std::fs;
 use std::time::Duration;
-use serde::Deserialize;
 use serialport::SerialPort;
 use crate::audio::{AudioControl, RAW_MAX};
-
-#[derive(Debug, Deserialize)]
-struct Config {
-    mappings: Vec<Mapping>,
-    serial: String,
-    baud_rate: usize,
-    quality: Quality
-}
-
-#[derive(Debug, Default, Deserialize)]
-#[serde(rename_all = "lowercase")]
-enum Quality {
-    Low,
-    #[default]
-    Default,
-    High
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(untagged)]
-enum Mapping {
-    Master { pin: u32, inverted: bool, master: u32 },
-    App { pin: u32, inverted: bool, app: String },
-    Midi { pin: u32, inverted: bool, midi: u32 },
-    Unmapped { pin: u32, inverted: bool },
-}
+use crate::config::{read_config, Mapping};
 
 const STEP_SIZE: i32 = 64;
 
@@ -76,25 +49,6 @@ fn create_serial() -> Box<dyn SerialPort> {
         .timeout(timeout)
         .open()
         .expect("Failed to open port")
-}
-
-fn read_config<'a>() -> anyhow::Result<Config> {
-    let base = xdg::BaseDirectories::with_prefix("deejx")?;
-    let path = base.place_config_file("profile.deejx.yml")?;
-
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-
-    if !path.exists() {
-        println!("Creating missing profile...");
-        fs::write(&path, include_str!("../example.yml"))?;
-    }
-
-    let raw = fs::read_to_string(path)?;
-    let config = serde_yml::from_str(raw.as_str())?;
-    println!("Read config, done.");
-    Ok(config)
 }
 
 fn main() {
