@@ -9,15 +9,9 @@ const STEP_SIZE: i32 = 64;
 const MINIMUM: f32 = 0.;
 const MAXIMUM: f32 = 100.;
 
-fn change_volume(values: &[u16], pulse: &mut SinkController, volumes: &mut ChannelVolumes) {
-    let data = values.iter()
-        .map(|x| f32::from(*x))
-        .map(|x| x / RAW_MAX * MAXIMUM)
-        .map(|x| x.max(MINIMUM).min(MAXIMUM))
-        .collect::<Vec<f32>>();
-
-    let percent = data.first().unwrap_or(&0.);
-    let volume: u32 = ((percent / 100.0) * 65536.0).round() as u32;
+fn set_master_volume(change: u16, pulse: &mut SinkController, volumes: &mut ChannelVolumes) {
+    let volume = ((change as f32) / RAW_MAX).max(MINIMUM).min(MAXIMUM);
+    let volume: u32 = ((volume) * 65536.0).round() as u32;
     
     pulse.set_device_volume_by_index(0, volumes.set(2, Volume(volume)))
 }
@@ -79,7 +73,7 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
             previous_values[i] = sliders[i];
             if i == 0 {
                 println!("a: {} -> {}", previous_values[i], value);
-                change_volume(&[sliders[i]], controller, channels); // TODO: impl other way
+                set_master_volume(sliders[i], controller, channels); // TODO: impl other way
             } else {
                 println!("b: {} -> {}", previous_values[i], value);
                 set_app_volume(controller, sliders[i]);
