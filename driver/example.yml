@@ -1,0 +1,27 @@
+# process names are case-insensitive
+# you can use 'master' to indicate the master channel with device index.
+# you can use 'app' to control a process with the certain name.
+# you can use 'midi' to control a virtual midi device with an index.
+# not providing any of options will result in "unmapped" control.
+# Unmapped controls all apps that aren't bound to any slider (this ignores master, mic and device-targeting sessions)
+# Per mapping you need to set pin that is used esp32/arduino and of it is inverted
+mappings:
+  - pin: 35
+    master: 0
+    inverted: false
+  - pin: 34
+    app: "spotify"
+    inverted: false
+  - pin: 33
+    midi: 10
+    inverted: false
+  - pin: 32
+    inverted: false
+
+# settings for connecting to the esp32/arduino board
+serial: /dev/ttyUSB0
+baud_rate: 9600
+
+# adjust the amount of signal noise reduction depending on your hardware quality
+# supported values are "high" (excellent hardware), "default" (regular hardware) or "low" (bad, noisy hardware)
+quality: default
