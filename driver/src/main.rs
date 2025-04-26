@@ -4,10 +4,17 @@ mod audio;
 use std::time::Duration;
 use crate::audio::{AudioControl, RAW_MAX};
 
+enum Mapping<'a> {
+    Master(u32),
+    App(&'a str),
+    Midi(u16),
+}
+
 const STEP_SIZE: i32 = 64;
 
 fn start_reading() {
     let mut controller = audio::get_controller();
+    let temp_mapping = [Mapping::Master(0), Mapping::App("spotify")];
     
     let port_name = "/dev/ttyUSB0";
     let baud_rate = 115_200;
@@ -22,12 +29,12 @@ fn start_reading() {
 
     loop {
         if let Some(sliders) = packets::read_packet(&mut serial) {
-            iter_sliders(sliders, &mut previous_values, &mut controller);
+            iter_sliders(sliders, &mut previous_values, &mut controller, &temp_mapping);
         }
     }
 }
 
-fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &mut Box<impl AudioControl>) {
+fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &mut Box<impl AudioControl>, mappings: &[Mapping]) {
     // Prepare initial array
     if previous_values.len() != sliders.len() {
         *previous_values = sliders.clone();
@@ -42,12 +49,16 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
             || ((value < 1 || value > RAW_MAX as i32 - 1) && value != prev_value) /* Safety net for extreme values */ {
 
             previous_values[i] = sliders[i];
-            if i == 0 {
-                println!("a: {} -> {}", previous_values[i], value);
-                controller.set_master_volume(0, sliders[i]); // TODO: impl other way
-            } else {
-                println!("b: {} -> {}", previous_values[i], value);
-                controller.set_app_volume_by_name("spotify", sliders[i]);
+            match mappings[i] {
+                Mapping::Master(device) => {
+                    controller.set_master_volume(device, sliders[i]);
+                }
+                Mapping::App(name) => {
+                    controller.set_app_volume_by_name(name, sliders[i]);
+                }
+                Mapping::Midi(value) => {
+                    unimplemented!()
+                }
             }
         }
     }
