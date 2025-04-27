@@ -31,11 +31,18 @@ Differences from original project:
 - **Optional Easy configuration UI app** *(work in progress)*
 - Installer with a portable version
 
+## Building your own
+
+For detail instruction and instrucion videos see:
+- Official guide at [prefex.dev/deejx](https://prefex.dev/deejx)
+- Official guide at [prefex.dev/deejx/flash](https://prefex.dev/deejx/flash)
+- *(have you made a video tutorial or text guide or something else. Make an PR for this readme section!)*
+
 ## How it works
 
 ### Hardware
 
-- The sliders are connected to 5 (or as many as you like) analog pins on an Arduino Nano/Uno board. They're powered from the board's 5V output (see schematic)
+- The sliders are connected to 5 (or as many as you like) analog pins on an Arduino Nano/Uno board. They're powered from the board's 3.3V output (see schematic)
 - The board connects via a USB cable to the PC
 
 #### Schematic
@@ -82,36 +89,6 @@ baud_rate: 9600
 # supported values are "high" (excellent hardware), "default" (regular hardware) or "low" (bad, noisy hardware)
 quality: default
 ```
-
-## Build your own!
-
-Building deej(x) is very simple. You only need a few relatively cheap parts. Build deej(x) for yourself, or as an awesome gift for your gaming buddies!
-
-### Bill of Materials
-
-- An ESP32
-  - I officially recommend using a ESP32 for their smaller form-factor.
-  - You can also use any other development board that has a Serial over USB interface
-- A few slider potentiometers, up to your number of free analog pins (the cheaper ones cost around 1-2 USD each, and come with a standard 10K Ohm variable resistor. These _should_ work just fine for this project)
-  - **Important:** make sure to get **linear** sliders, not logarithmic ones! Check the product description
-  - You can also use circular knobs if you like
-- Some wires
-- Any kind of box to hold everything together. **You don't need a 3D printer for this project!** It works fantastically with just a piece of cardboard or a shoebox. That being said, if you do have one, read on...
-
-### Build procedure
-
-- Connect everything according to the [schematic](#schematic)
-- Test with a multimeter to be sure your sliders are hooked up correctly
-- Flash the Arduino chip with the sketch in [`arduino\deej-5-sliders-vanilla`](./arduino/deej-5-sliders-vanilla/deej-5-sliders-vanilla.ino)
-  - _Important:_ If you have more or less than 5 sliders, you must edit the sketch to match what you have
-- ~~After flashing, check the serial monitor. You should see a constant stream of values separated by a pipe (`|`) character, e.g. `0|240|1023|0|483`~~
-  - When you move a slider, its corresponding value should move between 0 and 1023
-- Congratulations, you're now ready to run the deejx executable!
-
-
-### FAQ
-
-If you need help or want to learn more see at [prefex.dev/deejx](https://prefex.dev/deejx)
 
 ## Community
 
