@@ -1,0 +1,126 @@
+# Deejx
+deejx is an **open-source hardware volume mixer** and **simple midi controller** for Windows and Linux PCs.
+Use real-life sliders or knobs (like a DJ!)
+to seamlessly control the volumes of different apps (such as your music player, the game you're playing and your voice chat session) without having to stop what you're doing.
+
+Deejx is a alternative spin of [original deej](https://github.com/omriharel/deej) project.
+
+## Features
+Core features:
+- Bind apps to different sliders
+    - Bind multiple apps per slider (i.e. one slider for all your games)
+    - Bind the master channel
+    - ~~Bind "system sounds" (on Windows)~~ *(work in progress)*
+    - ~~Bind specific audio devices by name (on Windows)~~ *(work in progress)*
+    - ~~Bind currently active app (on Windows)~~ *(work in progress)*
+    - Bind all other unassigned apps
+- ~~Control your microphone's input level~~ *(work in progress)*
+- Helpful notifications to let you know if something isn't working
+
+Differences from original project:
+- Written in rust instead of go
+- **Lightweight, also feature rich**
+- - Uses < 4MB of storage and memory *(tested on Linux system for version 0.1.0)*
+- - **Midi virtual device support** *(work in progress)*
+- Based on packets instead of strings
+- Uses XDG config path for linux
+- Tray icon is optional and runs as separate app *(work in progress)*
+- Chaining devices to support 255 sliders *(work in progress)*
+- **Supports ESP32 as hardware**
+- **Flash once, add sliders when you want** *(work in progress)*
+- **Optional Easy configuration UI app** *(work in progress)*
+- Installer with a portable version
+
+## How it works
+
+### Hardware
+
+- The sliders are connected to 5 (or as many as you like) analog pins on an Arduino Nano/Uno board. They're powered from the board's 5V output (see schematic)
+- The board connects via a USB cable to the PC
+
+#### Schematic
+
+![Hardware schematic](assets/schematic.png)
+
+### Software
+
+- The code running on the Arduino/ESP32 board is a [Rust program](./firmware/src/bin/main.rs) constantly writing current slider values over its serial interface
+- The PC runs a lightweight [Rust client](./driver/src/main.rs) in the background. This client reads the serial stream and adjusts app volumes according to the given configuration file
+- The additional [Rust tray / UI companion](./ui) is optional and uses light slint framework. No electron.
+- The [Installer](./installer) is written in C# Avalonia with introduction wizard.
+
+## Slider mapping (configuration)
+
+deejx uses a simple YAML-formatted configuration file named [`profile.deejx.yml`](./example.deejx.yml), placed alongside the deejx executable on windows or in `%appdata%/deejx`.\
+For linux config is inside XDG config path.
+
+The config file determines which applications (and devices) are mapped to which sliders, and which parameters to use for the connection to the Arduino/ESP32 board, as well as other user preferences.
+
+**This file auto-reloads when its contents are changed, so you can change application mappings on-the-fly without restarting deejx.**
+
+It looks like this:
+```yaml
+# [...]
+mappings:
+  - pin: 35
+    master: 0
+    inverted: false
+  - pin: 34
+    app: "spotify"
+    inverted: false
+  - pin: 33
+    midi: 10
+    inverted: false
+  - pin: 32
+    inverted: false
+
+# settings for connecting to the esp32/arduino board
+serial: /dev/ttyUSB0
+baud_rate: 9600
+
+# adjust the amount of signal noise reduction depending on your hardware quality
+# supported values are "high" (excellent hardware), "default" (regular hardware) or "low" (bad, noisy hardware)
+quality: default
+```
+
+## Build your own!
+
+Building deej(x) is very simple. You only need a few relatively cheap parts. Build deej(x) for yourself, or as an awesome gift for your gaming buddies!
+
+### Bill of Materials
+
+- An ESP32
+  - I officially recommend using a ESP32 for their smaller form-factor.
+  - You can also use any other development board that has a Serial over USB interface
+- A few slider potentiometers, up to your number of free analog pins (the cheaper ones cost around 1-2 USD each, and come with a standard 10K Ohm variable resistor. These _should_ work just fine for this project)
+  - **Important:** make sure to get **linear** sliders, not logarithmic ones! Check the product description
+  - You can also use circular knobs if you like
+- Some wires
+- Any kind of box to hold everything together. **You don't need a 3D printer for this project!** It works fantastically with just a piece of cardboard or a shoebox. That being said, if you do have one, read on...
+
+### Build procedure
+
+- Connect everything according to the [schematic](#schematic)
+- Test with a multimeter to be sure your sliders are hooked up correctly
+- Flash the Arduino chip with the sketch in [`arduino\deej-5-sliders-vanilla`](./arduino/deej-5-sliders-vanilla/deej-5-sliders-vanilla.ino)
+  - _Important:_ If you have more or less than 5 sliders, you must edit the sketch to match what you have
+- ~~After flashing, check the serial monitor. You should see a constant stream of values separated by a pipe (`|`) character, e.g. `0|240|1023|0|483`~~
+  - When you move a slider, its corresponding value should move between 0 and 1023
+- Congratulations, you're now ready to run the deejx executable!
+
+
+### FAQ
+
+If you need help or want to learn more see at [prefex.dev/deejx](https://prefex.dev/deejx)
+
+## Community
+
+This project is quite new and creating Discord, XMPP or IRC and moderating it is not my dream.
+
+### Contributing
+
+Please see [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md).
+
+## License
+
+deej is released under the [MIT license](./LICENSE).
