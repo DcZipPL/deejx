@@ -30,6 +30,7 @@ pub enum Quality {
 #[serde(untagged)]
 pub enum Mapping {
     Master { pin: u32, inverted: bool, master: u32 },
+    Device { pin: u32, inverted: bool, device: String },
     App { pin: u32, inverted: bool, app: String },
     Midi { pin: u32, inverted: bool, midi: u32 },
     Unmapped { pin: u32, inverted: bool },

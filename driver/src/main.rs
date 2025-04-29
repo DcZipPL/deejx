@@ -30,7 +30,10 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
             previous_values[i] = sliders[i];
             match &mappings[i] {
                 Mapping::Master {master, ..} => {
-                    controller.set_master_volume(*master, sliders[i]);
+                    controller.set_master_volume_by_index(*master, sliders[i]);
+                }
+                Mapping::Device { device, .. } => {
+                    controller.set_master_volume_by_name(device, sliders[i]);
                 }
                 Mapping::App {app, ..} => {
                     controller.set_app_volume_by_name(app.as_str(), sliders[i]);
@@ -40,7 +43,7 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
                 },
                 &Mapping::Unmapped { .. } => {
                     error!("Cannot change value, Unmapped not supported yet.");
-                }
+                },
             }
         }
     }
@@ -59,10 +62,10 @@ fn main() {
     env_logger::Builder::new().filter_level(log::LevelFilter::Debug).init();
     debug!("@{}:{}({})@", env!("CARGO_PKG_VERSION"), env::consts::OS, env::consts::ARCH);
     info!("Starting driver...\nWelcome to {}, control volumes like a DJ!\nIf you encounter any problem, you can make issue on https://github.com/DcZipPL/deejx\nRemember to read FAQ before submitting an issue.\nThank you for using deejx!", env!("CARGO_PKG_NAME"));
-    
+
     let path = get_config_path().expect("Failed to get config path");
     let (mut config, watcher) = prepare_config(&path).expect("Failed to initialise configuration watchers and reads");
-    
+
     let mut controller = audio::get_controller();
     info!("Audio controller ({}) started!", controller.name());
     info!("Ready!");
