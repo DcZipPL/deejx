@@ -3,7 +3,7 @@ deejx is an **open-source hardware volume mixer** and **simple midi controller**
 Use real-life sliders or knobs (like a DJ!)
 to seamlessly control the volumes of different apps (such as your music player, the game you're playing and your voice chat session) without having to stop what you're doing.
 
-Deejx is a alternative spin of [original deej](https://github.com/omriharel/deej) project.
+deejx is a alternative spin of [original deej](https://github.com/omriharel/deej) project.
 
 ## Features
 Core features:
@@ -42,7 +42,7 @@ For detail instruction and instrucion videos see:
 
 ### Hardware
 
-- The sliders are connected to 5 (or as many as you like) analog pins on an Arduino Nano/Uno board. They're powered from the board's 3.3V output (see schematic)
+- The sliders are connected to 2 (or as many as you like) analog pins on an ESP32 board. They're powered from the board's 3.3V output (see schematic)
 - The board connects via a USB cable to the PC
 
 #### Schematic
@@ -84,6 +84,7 @@ mappings:
 # settings for connecting to the esp32/arduino board
 serial: /dev/ttyUSB0
 baud_rate: 9600
+timeout: 1000
 
 # adjust the amount of signal noise reduction depending on your hardware quality
 # supported values are "high" (excellent hardware), "default" (regular hardware) or "low" (bad, noisy hardware)
