@@ -15,6 +15,10 @@ pub(super) struct UnixController {
 }
 
 impl AudioControl for UnixController {
+    fn name(&self) -> &'static str {
+        "libpulse"
+    }
+
     fn set_master_volume(&mut self, device_index: u32, volume: u16) {
         let volume = ((volume as f32) / RAW_MAX).max(MINIMUM).min(MAXIMUM);
         let volume: u32 = ((volume) * 65536.0).round() as u32;

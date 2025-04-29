@@ -3,8 +3,9 @@ mod audio;
 mod config;
 mod midi;
 
+use std::env;
 use std::time::Duration;
-use log::{error, info};
+use log::{debug, error, info};
 use serialport::SerialPort;
 use crate::audio::{AudioControl, RAW_MAX};
 use crate::config::{get_config_path, prepare_config, Mapping};
@@ -55,12 +56,16 @@ fn create_serial(port: &str, baud_rate: u32, timeout: u64) -> Box<dyn SerialPort
 }
 
 fn main() {
-    env_logger::Builder::new().filter_level(log::LevelFilter::Info).init();
+    env_logger::Builder::new().filter_level(log::LevelFilter::Debug).init();
+    debug!("@{}:{}({})@", env!("CARGO_PKG_VERSION"), env::consts::OS, env::consts::ARCH);
+    info!("Starting driver...\nWelcome to {}, control volumes like a DJ!\nIf you encounter any problem, you can make issue on https://github.com/DcZipPL/deejx\nRemember to read FAQ before submitting an issue.\nThank you for using deejx!", env!("CARGO_PKG_NAME"));
     
     let path = get_config_path().expect("Failed to get config path");
     let (mut config, watcher) = prepare_config(&path).expect("Failed to initialise configuration watchers and reads");
-
+    
     let mut controller = audio::get_controller();
+    info!("Audio controller ({}) started!", controller.name());
+    info!("Ready!");
     loop {
         let mut serial = create_serial(&config.serial, config.baud_rate, config.timeout);
 

@@ -1,3 +1,4 @@
+use log::warn;
 use serialport::SerialPort;
 
 pub fn read_packet(serial: &mut Box<dyn SerialPort>) -> Option<Vec<u16>> {
@@ -25,7 +26,7 @@ pub fn read_packet(serial: &mut Box<dyn SerialPort>) -> Option<Vec<u16>> {
             .fold(0u8, |acc, b| acc ^ b);
 
         if checksum != payload[2 * count] {
-            eprintln!("Checksum mismatch, skipping...");
+            warn!("Checksum mismatch, skipping...");
             continue;
         }
 

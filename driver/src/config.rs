@@ -116,7 +116,7 @@ fn start_config_watcher<P: AsRef<Path>>(path: P) -> Receiver<Event> {
                     tx.send(event).expect("Failed to send event");
                 }
                 Err(e) => {
-                    eprintln!("Watch error: {:?}", e);
+                    error!("Watch error: {:?}", e);
                 }
             }
         }).expect("Failed to create watcher");
