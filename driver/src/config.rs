@@ -63,7 +63,7 @@ impl Config {
         loop {
             while let Ok(event) = watcher.try_recv() {
                 if event.kind == EventKind::Modify(ModifyKind::Data(DataChange::Any)) {
-                    info!("Reloading config");
+                    info!("Hot-Reloading config");
                     match read_config(&config_path) {
                         Ok(new) => {
                             *self = new;
