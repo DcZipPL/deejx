@@ -5,6 +5,9 @@ to seamlessly control the volumes of different apps (such as your music player, 
 
 deejx is a alternative spin of [original deej](https://github.com/omriharel/deej) project.
 
+> [!WARNING]
+> Project is in early stages. Documentation and some features are not available yet. 
+
 ## Features
 Core features:
 - Bind apps to different sliders

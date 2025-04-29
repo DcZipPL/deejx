@@ -4,6 +4,7 @@ mod config;
 mod midi;
 
 use std::time::Duration;
+use log::{error, info};
 use serialport::SerialPort;
 use crate::audio::{AudioControl, RAW_MAX};
 use crate::config::{get_config_path, prepare_config, Mapping};
@@ -34,9 +35,11 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
                     controller.set_app_volume_by_name(app.as_str(), sliders[i]);
                 }
                 Mapping::Midi {midi, ..} => {
-                    todo!()
+                    error!("Cannot change value, MIDI not supported yet.");
                 },
-                &Mapping::Unmapped { .. } => todo!()
+                &Mapping::Unmapped { .. } => {
+                    error!("Cannot change value, Unmapped not supported yet.");
+                }
             }
         }
     }
@@ -54,17 +57,29 @@ fn create_serial(port: &str, baud_rate: u32, timeout: u64) -> Box<dyn SerialPort
 fn main() {
     env_logger::Builder::new().filter_level(log::LevelFilter::Info).init();
     
-    let path = get_config_path().expect("Failed to get config path.");
+    let path = get_config_path().expect("Failed to get config path");
     let (mut config, watcher) = prepare_config(&path).expect("Failed to initialise configuration watchers and reads");
 
     let mut controller = audio::get_controller();
-    let mut serial = create_serial(&config.serial, config.baud_rate, config.timeout);
-
-    let mut previous_values = Vec::<u16>::new();
     loop {
-        if let Some(sliders) = packets::read_packet(&mut serial) {
-            iter_sliders(sliders, &mut previous_values, &mut controller, &config.mappings);
+        let mut serial = create_serial(&config.serial, config.baud_rate, config.timeout);
+
+        let mut previous_values = Vec::new();
+        loop {
+            // Main loop
+            if let Some(sliders) = packets::read_packet(&mut serial) {
+                iter_sliders(sliders, &mut previous_values, &mut controller, &config.mappings);
+            }
+
+            // Reload config
+            let old_config = config.clone();
+            config.update(&path, &watcher);
+            if old_config.baud_rate != config.baud_rate
+                || old_config.timeout != config.timeout
+                || old_config.serial != config.serial {
+                info!("Serial data changed in config. Hard-resetting serial...");
+                break; // Go up to create serial
+            }
         }
-        config.update(&path, &watcher);
     }
 }
