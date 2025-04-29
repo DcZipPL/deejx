@@ -6,7 +6,8 @@ mod midi;
 use std::time::Duration;
 use serialport::SerialPort;
 use crate::audio::{AudioControl, RAW_MAX};
-use crate::config::{read_config, Mapping};
+use crate::config::{get_config_path, prepare_config, Mapping};
+use pretty_env_logger::env_logger;
 
 const STEP_SIZE: i32 = 64;
 
@@ -41,32 +42,29 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
     }
 }
 
-fn create_serial() -> Box<dyn SerialPort> {
-    let port_name = "/dev/ttyUSB0";
-    let baud_rate = 115_200;
-    let timeout = Duration::from_millis(20000);
+fn create_serial(port: &str, baud_rate: u32, timeout: u64) -> Box<dyn SerialPort> {
+    let timeout = Duration::from_millis(timeout);
 
-    serialport::new(port_name, baud_rate)
+    serialport::new(port, baud_rate)
         .timeout(timeout)
         .open()
         .expect("Failed to open port")
 }
 
 fn main() {
-    let mapping = read_config();
-    let Ok(mapping) = mapping else {
-        eprintln!("Configuration maybe invalid!");
-        eprintln!("{}", mapping.unwrap_err());
-        std::process::exit(1);
-    };
+    env_logger::Builder::new().filter_level(log::LevelFilter::Info).init();
+    
+    let path = get_config_path().expect("Failed to get config path.");
+    let (mut config, watcher) = prepare_config(&path).expect("Failed to initialise configuration watchers and reads");
 
     let mut controller = audio::get_controller();
-    let mut serial = create_serial();
+    let mut serial = create_serial(&config.serial, config.baud_rate, config.timeout);
 
     let mut previous_values = Vec::<u16>::new();
     loop {
         if let Some(sliders) = packets::read_packet(&mut serial) {
-            iter_sliders(sliders, &mut previous_values, &mut controller, &mapping.mappings);
+            iter_sliders(sliders, &mut previous_values, &mut controller, &config.mappings);
         }
+        config.update(&path, &watcher);
     }
 }
