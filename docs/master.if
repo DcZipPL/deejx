@@ -1,0 +1,4 @@
+%to   fe80::a4c2:3ff:fe79:1b3a
+%path deejx
+@.adoc |> "Work in progress"
+**/*.adoc

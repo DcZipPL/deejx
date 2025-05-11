@@ -1,0 +1,10 @@
+.🚧 Work in progress...
+
+Deejx docs aren't done yet.
+
+For building `cargo build` driver and `cd firmware; cargo build && espflash flash ./target/xtensa-esp32-none-elf/debug/firmware` for firmware
+
+The 0.1.1 currently works only on Linux.
+
+When available? I don't know... in the future, september 2025?
+
