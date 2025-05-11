@@ -1,0 +1,61 @@
+= ESP32 Setup
+:toc:
+:github-url: https://github.com/DcZipPL/deejx
+
+This guide explains how to set up deej with an ESP32 using a custom Rust-based firmware and a simple browser-based flasher.
+
+== 1. Hardware Wiring
+
+* Connect 1–10 sliders to analog-capable GPIO pins (e.g., GPIO34, GPIO35, GPIO32...).
+* Use a breadboard or custom PCB.
+* Power all sliders from **3.3V** (not 5V!) and GND on the ESP32.
+
+TIP: Refer to the `docs/schematics/` folder for examples and pin mapping.
+
+== 2. Flashing the Firmware
+
+This fork uses a web-based flasher for ease of use — no IDE required.
+
+. Visit the firmware flashing page:  
+  👉 link:https://prefex.dev/flash/deejx[Flash Firmware]
+. Connect your ESP32 via USB.
+. Click **"Connect"** and select your device.
+. Follow the on-screen instructions to flash the latest firmware.
+. Wait for confirmation — your device will reboot and begin running deej firmware.
+
+NOTE: Use Chrome or Edge for best compatibility with Web Serial API.
+
+== 3. Desktop App Configuration
+
+Define your slider mappings:
+
+[source,yaml]
+----
+mappings:
+  - pin: 35 # Pin of ESP32
+    master: 0 # Change master volume
+    inverted: false # Is slider inverted
+  - pin: 34
+    app: "spotify" # Change app volume
+    inverted: false
+  - pin: 33
+    midi: 10 # Midi value
+    inverted: false
+----
+
+For detailed how to map apps or devices see: 👉 link:../configuration-file.adoc[Configuration File]
+
+== 4. Run deej
+
+. Ensure your ESP32 is powered.
+. Launch `deej.exe` on Windows or `./deej` on Linux.
+. You should see volume changes in real time when moving sliders.
+
+== Troubleshooting
+
+* No response from sliders? Confirm correct GPIO mapping in firmware.
+* Still stuck? Try re-flashing the firmware or restarting the ESP32.
+
+== More Resources
+
+* Source code: {github-url}

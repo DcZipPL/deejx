@@ -1,0 +1,42 @@
+= Getting Started
+:toc:
+:toclevels: 2
+:github-url: https://github.com/DcZipPL/deejx
+
+deejx lets you control application volume levels using physical sliders. It works by reading analog input from a microcontroller and sending it to a desktop app that controls audio output in real time.
+
+== Requirements
+
+* Linux, Windows 10 or later
+* A microcontroller (Arduino or ESP32)
+* 1–10 sliders (potentiometers or faders)
+* Basic wiring (breadboard, jumper wires)
+* Arduino IDE or compatible
+
+== Choose Your Platform
+
+This fork supports two types of microcontrollers:
+
+[cols="1,1"]
+|===
+| Arduino (e.g. Nano, Uno) | ESP32 (e.g. DevKit, WROOM)
+
+| 6–8 analog pins (A0–A5)
+| More analog pins available (GPIO 32–39 etc.)
+
+| 5V operation
+| 3.3V operation (double-check voltage compatibility)
+|===
+
+== Choose Your Setup
+
+Follow the instructions for your board type:
+
+* 👉 link:setup/arduino.adoc[Arduino Setup]
+* 👉 link:setup/esp32.adoc[ESP32 Setup]
+
+For firmware and wiring diagrams, see the `firmware/` and `schematics/` folders in this repo.
+
+== Downloads
+
+* Latest releases: {github-url}/releases
