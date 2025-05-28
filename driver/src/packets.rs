@@ -1,6 +1,7 @@
 use log::warn;
 use serialport::SerialPort;
 
+// Packet: [0xAA] [count] [pin0, pin2, pin3, ...] [checksum]
 pub fn read_packet(serial: &mut Box<dyn SerialPort>) -> Option<Vec<u16>> {
     let mut header = [0u8; 1];
 
