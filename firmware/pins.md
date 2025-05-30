@@ -1,0 +1,19 @@
+**ADC 1**
+- GPIO 36
+- GPIO 39
+- GPIO 34
+- GPIO 35
+- GPIO 32
+- GPIO 33
+
+**ADC 2**
+- GPIO 25
+- GPIO 26
+- GPIO 27
+- GPIO 14
+- GPIO 12
+- GPIO 13
+- GPIO 4
+- GPIO 2
+- GPIO 15
+- GPIO 0
