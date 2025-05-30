@@ -5,11 +5,11 @@ esp_export := "~/export-esp.sh"
 list:
   just --list
 
-# Build except firmware (except firmware)
+# Build project (except firmware)
 build:
   cargo build
 
-# Buids in release mode (except firmware)
+# Buid project in release mode (except firmware)
 release:
   cargo build --release
 
@@ -17,9 +17,17 @@ release:
 run:
   cargo run --package deejx-driver --bin deejx-driver
 
-# Builds and flashes firmware
+# Build and flash firmware
 flash:
   @cd firmware
   . {{esp_export}}
   cargo build
   espflash flash ./target/xtensa-esp32-none-elf/debug/firmware
+
+# Build docs and prepare for publishing
+build-docs:
+  padoc build ./docs @@@
+
+# Publish docs
+publish-docs:
+  padoc publish ./docs @@@

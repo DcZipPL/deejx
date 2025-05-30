@@ -1,6 +1,5 @@
 %to   fe80::a4c2:3ff:fe79:1b3a
-%path /deejx
+%path /docs/deejx
 
 README.md |> !
 @.adoc |> "Getting Started"
-**/*.jxl
