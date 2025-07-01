@@ -19,7 +19,7 @@ run:
 
 # Build and flash firmware
 flash:
-  @cd firmware
+  cd firmware
   . {{esp_export}}
   cargo build
   espflash flash ./target/xtensa-esp32-none-elf/debug/firmware

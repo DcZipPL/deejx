@@ -3,9 +3,9 @@ mod audio;
 mod config;
 mod midi;
 
-use std::env;
+use std::{env, thread};
 use std::time::Duration;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use serialport::SerialPort;
 use crate::audio::{AudioControl, RAW_MAX};
 use crate::config::{get_config_path, prepare_config, Mapping};
@@ -49,13 +49,12 @@ fn iter_sliders(sliders: Vec<u16>, previous_values: &mut Vec<u16>, controller: &
     }
 }
 
-fn create_serial(port: &str, baud_rate: u32, timeout: u64) -> Box<dyn SerialPort> {
+fn create_serial(port: &str, baud_rate: u32, timeout: u64) -> serialport::Result<Box<dyn SerialPort>> {
     let timeout = Duration::from_millis(timeout);
 
     serialport::new(port, baud_rate)
         .timeout(timeout)
         .open()
-        .expect("Failed to open port")
 }
 
 fn main() {
@@ -71,6 +70,12 @@ fn main() {
     info!("Ready!");
     loop {
         let mut serial = create_serial(&config.serial, config.baud_rate, config.timeout);
+        while serial.is_err() {
+            warn!("Serial connection failed. Retrying...");
+            thread::sleep(Duration::from_millis(500));
+            serial = create_serial(&config.serial, config.baud_rate, config.timeout);
+        }
+        let mut serial = serial.unwrap();
 
         let mut previous_values = Vec::new();
         loop {

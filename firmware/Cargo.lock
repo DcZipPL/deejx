@@ -591,12 +591,12 @@ name = "firmware"
 version = "0.1.0"
 dependencies = [
  "critical-section",
- "defmt 1.0.1",
  "esp-alloc",
  "esp-backtrace",
  "esp-hal",
  "esp-println",
  "nb 1.1.0",
+ "paste",
 ]
 
 [[package]]
